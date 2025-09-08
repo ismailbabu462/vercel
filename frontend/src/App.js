@@ -12,6 +12,7 @@ import ProjectDetail from "./components/ProjectDetail";
 import NotesPage from "./components/NotesPage";
 import ToolsPage from "./components/ToolsPage";
 import PolicyPage from "./components/PolicyPage";
+import SettingsPage from "./components/SettingsPage";
 import WelcomePage from "./components/WelcomePage";
 import PricingPage from "./pages/PricingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
@@ -93,6 +94,7 @@ function App() {
                 <Route path="/notes" element={<NotesPage />} />
                 <Route path="/tools" element={<ToolsPage />} />
                 <Route path="/policy" element={<PolicyPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/payment/mock-checkout" element={<MockCheckoutPage />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />

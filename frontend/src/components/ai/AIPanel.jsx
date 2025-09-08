@@ -92,6 +92,12 @@ const AIPanel = () => {
         requestBody.message = `${userMessage}\n\nTool Output Context:\n${aiContext.tool_output}`;
       }
 
+      // Add Gemini API key from localStorage if available
+      const geminiApiKey = localStorage.getItem('gemini_api_key');
+      if (geminiApiKey) {
+        requestBody.gemini_api_key = geminiApiKey;
+      }
+
       // Send message to backend with extended timeout for AI processing
       const response = await api.post('/ai/chat', requestBody, {
         timeout: 60000 // 60 seconds timeout for AI processing

@@ -12,7 +12,8 @@ import {
   FileText,
   Sun,
   Moon,
-  Heart
+  Heart,
+  Settings
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -40,6 +41,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
     { name: 'Tools', href: '/tools', icon: Wrench },
     { name: 'Upgrade Plan', href: '/pricing', icon: Gem },
     { name: 'Policy', href: '/policy', icon: FileText },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const isActive = (href) => location.pathname === href;

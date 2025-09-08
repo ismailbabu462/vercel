@@ -1,0 +1,170 @@
+services:
+  # MySQL Service
+  mysql:
+    image: mysql:8.0
+    container_name: pentest_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: pentest_suite
+      MYSQL_USER: pentest_user
+      MYSQL_PASSWORD: pentest_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - pentest_network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # phpMyAdmin - Web MySQL Client
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: pentest_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword123
+      MYSQL_ROOT_PASSWORD: rootpassword123
+    ports:
+      - "8080:80"
+    networks:
+      - pentest_network
+    depends_on:
+      - mysql
+
+  # Tools Service - Contains all pentest tools
+  tools:
+    build:
+      context: ./tools
+      dockerfile: Dockerfile
+    container_name: pentest_tools
+    restart: unless-stopped
+    networks:
+      - pentest_network
+    volumes:
+      - ./tools:/workspace
+      - tools_data:/opt/tools
+    profiles:
+      - tools
+
+  # Ollama Service - AI Model Server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pentest_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - pentest_network
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+
+  # Redis Service - For Celery task queue (disabled for now)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: pentest_redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6380:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - pentest_network
+  #   command: redis-server --appendonly yes
+
+  # Celery Worker Service - For background AI tasks (disabled for now)
+  # celery-worker:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: pentest_celery_worker
+  #   restart: unless-stopped
+  #   command: celery -A celery_app worker --loglevel=info --queues=vulnerability_analysis
+  #   volumes:
+  #     - ./backend:/app
+  #   networks:
+  #     - pentest_network
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+  #     - SEARCH_ENGINE_ID=${SEARCH_ENGINE_ID:-}
+  #   depends_on:
+  #     - redis
+  #     - ollama
+  #   profiles:
+  #     - ai
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pentest_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=mysql+pymysql://pentest_user:pentest_password@mysql:3306/pentest_suite
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3010,http://127.0.0.1:3000,http://127.0.0.1:3010
+      - LEMONSQUEEZY_WEBHOOK_SECRET=pentora_webhook_secret_2024
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1
+    ports:
+      - "8001:8001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - pentest_network
+    volumes:
+      - ./backend:/app
+      - tools_data:/opt/tools:ro  # Read-only access to tools
+    command: python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pentest_frontend
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      - REACT_APP_API_URL=https://pentorasecbeta.mywire.org/api
+      - REACT_APP_BACKEND_URL=https://pentorasecbeta.mywire.org
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pentest_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:
+  tools_data:
+  ollama_data:
+  redis_data:
+
+networks:
+  pentest_network:
+    driver: bridge

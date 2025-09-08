@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+        "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+        monospace;
+}
+
+@layer base {
+  :root {
+    /* Modern Dark Theme - Sophisticated Dark Grey with Navy Accent */
+    --background: 220 13% 9%;        /* Deep dark grey-blue */
+    --foreground: 220 9% 95%;        /* High contrast white */
+    --card: 220 13% 11%;             /* Slightly lighter dark grey */
+    --card-foreground: 220 9% 95%;   /* High contrast white */
+    --popover: 220 13% 11%;          /* Matching card background */
+    --popover-foreground: 220 9% 95%; /* High contrast white */
+    --primary: 220 100% 50%;         /* Vibrant navy blue */
+    --primary-foreground: 220 9% 95%; /* High contrast white */
+    --secondary: 220 13% 16%;        /* Medium dark grey */
+    --secondary-foreground: 220 9% 95%; /* High contrast white */
+    --muted: 220 13% 16%;            /* Medium dark grey */
+    --muted-foreground: 220 5% 65%;  /* Muted text */
+    --accent: 220 13% 16%;           /* Medium dark grey */
+    --accent-foreground: 220 9% 95%; /* High contrast white */
+    --destructive: 0 84% 60%;        /* Red for errors */
+    --destructive-foreground: 220 9% 95%; /* High contrast white */
+    --border: 220 13% 20%;           /* Subtle border */
+    --input: 220 13% 16%;            /* Input background */
+    --ring: 220 100% 50%;            /* Focus ring navy */
+    --success: 142 76% 36%;          /* Green for success */
+    --success-foreground: 220 9% 95%; /* High contrast white */
+    --warning: 38 92% 50%;           /* Orange for warnings */
+    --warning-foreground: 220 9% 95%; /* High contrast white */
+    --info: 220 100% 50%;            /* Navy for info */
+    --info-foreground: 220 9% 95%;   /* High contrast white */
+    --chart-1: 220 100% 50%;         /* Navy */
+    --chart-2: 142 76% 36%;          /* Green */
+    --chart-3: 38 92% 50%;           /* Orange */
+    --chart-4: 0 84% 60%;            /* Red */
+    --chart-5: 220 13% 16%;          /* Dark grey */
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

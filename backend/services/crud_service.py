@@ -292,14 +292,19 @@ def delete_vulnerability(vuln_id: str, user_id: str, db: Session) -> bool:
 
 
 # Dashboard Statistics
-def get_dashboard_stats(db: Session) -> Dict[str, Any]:
-    """Get dashboard statistics"""
-    total_projects = db.query(DBProject).count()
-    active_projects = db.query(DBProject).filter(DBProject.status == "active").count()
-    total_notes = db.query(DBNote).count()
+def get_dashboard_stats(user_id: str, db: Session) -> Dict[str, Any]:
+    """Get dashboard statistics for specific user"""
+    total_projects = db.query(DBProject).filter(DBProject.user_id == user_id).count()
+    active_projects = db.query(DBProject).filter(
+        DBProject.user_id == user_id,
+        DBProject.status == "active"
+    ).count()
+    total_notes = db.query(DBNote).filter(DBNote.user_id == user_id).count()
     
-    # Get recent projects
-    recent_db_projects = db.query(DBProject).order_by(DBProject.updated_at.desc()).limit(5).all()
+    # Get recent projects for this user
+    recent_db_projects = db.query(DBProject).filter(
+        DBProject.user_id == user_id
+    ).order_by(DBProject.updated_at.desc()).limit(5).all()
     
     return {
         "total_projects": total_projects,

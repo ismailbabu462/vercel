@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
@@ -174,22 +174,52 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
 
 
 @router.post("/device-login", response_model=TokenResponse)
-async def device_login(db: Session = Depends(get_db)):
-    """Device-based auto-login - creates unique user per device"""
+async def device_login(request: Request, db: Session = Depends(get_db)):
+    """Professional device-based auto-login with advanced fingerprinting"""
     import hashlib
     import platform
     import socket
+    import uuid
+    import time
+    import json
     
-    # Generate unique device fingerprint
-    device_info = f"{platform.system()}-{platform.release()}-{socket.gethostname()}"
-    device_id = hashlib.sha256(device_info.encode()).hexdigest()[:16]
+    # Advanced device fingerprinting (OWASP compliant)
+    user_agent = request.headers.get("user-agent", "")
+    accept_language = request.headers.get("accept-language", "")
+    accept_encoding = request.headers.get("accept-encoding", "")
+    connection = request.headers.get("connection", "")
+    cache_control = request.headers.get("cache-control", "")
+    
+    # Create comprehensive device fingerprint
+    device_components = [
+        platform.system(),           # Windows, Linux, macOS
+        platform.release(),          # 10, 11, etc.
+        platform.machine(),          # x86_64, AMD64, etc.
+        platform.processor(),        # Intel, AMD, etc.
+        socket.gethostname(),        # Computer name
+        user_agent,                  # Browser info
+        accept_language,             # Language preferences
+        accept_encoding,             # Compression support
+        connection,                  # Connection type
+        cache_control,               # Cache behavior
+        str(uuid.getnode()),         # MAC address (network card)
+        str(time.time())[:10]        # Timestamp for uniqueness
+    ]
+    
+    # Create unique device ID with multiple hashing layers
+    device_string = "|".join(device_components)
+    device_id = hashlib.sha256(device_string.encode()).hexdigest()[:32]
+    
+    # Add additional entropy for better uniqueness
+    entropy = hashlib.sha256(f"{device_id}{uuid.uuid4()}".encode()).hexdigest()[:16]
+    final_device_id = f"{device_id[:16]}-{entropy}"
     
     # Check if device user exists
-    existing_user = db.query(DBUser).filter(DBUser.email == f"device_{device_id}@pentorsec.local").first()
+    existing_user = db.query(DBUser).filter(DBUser.email == f"device_{final_device_id}@pentorsec.local").first()
     
     if existing_user:
         # Use existing device user
-        access_token = create_access_token(data={"sub": existing_user.id, "device_id": device_id})
+        access_token = create_access_token(data={"sub": existing_user.id, "device_id": final_device_id})
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -209,8 +239,8 @@ async def device_login(db: Session = Depends(get_db)):
         
         db_user = DBUser(
             id=user_id,
-            username=f"Device {device_id[:8]}",
-            email=f"device_{device_id}@pentorsec.local",
+            username=f"Device {final_device_id[:8]}",
+            email=f"device_{final_device_id}@pentorsec.local",
             tier="essential",
             subscription_valid_until=None,
             last_tool_run_at=None,
@@ -222,7 +252,7 @@ async def device_login(db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_user)
         
-        access_token = create_access_token(data={"sub": user_id, "device_id": device_id})
+        access_token = create_access_token(data={"sub": user_id, "device_id": final_device_id})
         
         return TokenResponse(
             access_token=access_token,

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from database import get_db
+from dependencies import get_current_active_user
 from services.crud_service import get_dashboard_stats
 from services.model_service import (
     Project,
@@ -19,10 +20,13 @@ router = APIRouter(prefix="/api", tags=["Dashboard"])
 
 
 @router.get("/dashboard/stats")
-async def get_dashboard_stats_endpoint(db: Session = Depends(get_db)):
-    """Get dashboard statistics"""
-    # Get stats using service
-    stats = get_dashboard_stats(db)
+async def get_dashboard_stats_endpoint(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get dashboard statistics for current user"""
+    # Get stats using service with user context
+    stats = get_dashboard_stats(current_user.id, db)
     
     # Convert recent projects to Pydantic models
     recent_projects = []

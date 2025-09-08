@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { useToast } from '../hooks/use-toast';
-import { api } from '../lib/api';
+import api from '../lib/api';
 
 const SettingsPage = () => {
   const [geminiApiKey, setGeminiApiKey] = useState('');

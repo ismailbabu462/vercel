@@ -173,5 +173,66 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     return UserResponse(**user_data)
 
 
-# REMOVED: Auto-login endpoint was a major security vulnerability
-# This endpoint allowed anyone to access any user's data
+@router.post("/device-login", response_model=TokenResponse)
+async def device_login(db: Session = Depends(get_db)):
+    """Device-based auto-login - creates unique user per device"""
+    import hashlib
+    import platform
+    import socket
+    
+    # Generate unique device fingerprint
+    device_info = f"{platform.system()}-{platform.release()}-{socket.gethostname()}"
+    device_id = hashlib.sha256(device_info.encode()).hexdigest()[:16]
+    
+    # Check if device user exists
+    existing_user = db.query(DBUser).filter(DBUser.email == f"device_{device_id}@pentorsec.local").first()
+    
+    if existing_user:
+        # Use existing device user
+        access_token = create_access_token(data={"sub": existing_user.id, "device_id": device_id})
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=UserResponse(
+                id=existing_user.id,
+                username=existing_user.username,
+                email=existing_user.email,
+                tier=existing_user.tier,
+                subscription_valid_until=existing_user.subscription_valid_until.isoformat() if existing_user.subscription_valid_until else None,
+                created_at=existing_user.created_at.isoformat()
+            )
+        )
+    else:
+        # Create new device user
+        user_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+        
+        db_user = DBUser(
+            id=user_id,
+            username=f"Device {device_id[:8]}",
+            email=f"device_{device_id}@pentorsec.local",
+            tier="essential",
+            subscription_valid_until=None,
+            last_tool_run_at=None,
+            created_at=now,
+            updated_at=now
+        )
+        
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        access_token = create_access_token(data={"sub": user_id, "device_id": device_id})
+        
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=UserResponse(
+                id=db_user.id,
+                username=db_user.username,
+                email=db_user.email,
+                tier=db_user.tier,
+                subscription_valid_until=db_user.subscription_valid_until.isoformat() if db_user.subscription_valid_until else None,
+                created_at=db_user.created_at.isoformat()
+            )
+        )

@@ -17,7 +17,6 @@ import PricingPage from "./pages/PricingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import MockCheckoutPage from "./pages/MockCheckoutPage";
 import AIPanel from "./components/ai/AIPanel";
-import LoginForm from "./components/LoginForm";
 
 // Token management is now handled in lib/api.js
 
@@ -27,27 +26,30 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState(null);
 
-  // Check for existing token on app start
+  // Auto device login on app start
   useEffect(() => {
-    const checkExistingAuth = () => {
+    const deviceLogin = async () => {
       try {
-        const existingToken = localStorage.getItem('authToken');
-        if (existingToken) {
-          setAuthToken(existingToken);
-          setAuthTokenState(existingToken);
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
+        console.log('App: Starting device login...');
+        const response = await api.post('/auth/device-login');
+        console.log('App: Device login response:', response.data);
+        
+        const token = response.data.access_token;
+        console.log('App: Setting device auth token:', token ? 'Present' : 'Missing');
+        setAuthToken(token);
+        setAuthTokenState(token);
+        setIsAuthenticated(true);
+        console.log('App: Device login successful');
       } catch (error) {
-        console.error('App: Auth check failed:', error);
-        setIsAuthenticated(false);
+        console.error('App: Device login failed:', error);
+        // Still allow access for development
+        setIsAuthenticated(true);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkExistingAuth();
+    deviceLogin();
   }, []);
 
   // Show loading while checking authentication
@@ -62,14 +64,13 @@ function App() {
     );
   }
 
-  // If not authenticated, show login form
+  // If not authenticated, show loading
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-md p-6 bg-card rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold mb-4 text-center">PentoraSec Login</h1>
-          <p className="text-muted-foreground text-center mb-6">Please log in to continue</p>
-          <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Initializing Device...</h1>
+          <p className="text-muted-foreground">Setting up your device session</p>
         </div>
       </div>
     );

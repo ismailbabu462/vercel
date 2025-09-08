@@ -17,6 +17,7 @@ import PricingPage from "./pages/PricingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import MockCheckoutPage from "./pages/MockCheckoutPage";
 import AIPanel from "./components/ai/AIPanel";
+import LoginForm from "./components/LoginForm";
 
 // Token management is now handled in lib/api.js
 
@@ -26,30 +27,27 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState(null);
 
-  // Auto-login on app start
+  // Check for existing token on app start
   useEffect(() => {
-    const autoLogin = async () => {
+    const checkExistingAuth = () => {
       try {
-        console.log('App: Starting auto-login...');
-        const response = await api.post('/auth/auto-login');
-        console.log('App: Auto-login response:', response.data);
-        
-        const token = response.data.access_token;
-        console.log('App: Setting auth token:', token ? 'Present' : 'Missing');
-        setAuthToken(token);
-        setAuthTokenState(token);
-        setIsAuthenticated(true);
-        console.log('App: Auto-login successful');
+        const existingToken = localStorage.getItem('authToken');
+        if (existingToken) {
+          setAuthToken(existingToken);
+          setAuthTokenState(existingToken);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch (error) {
-        console.error('App: Auto-login failed:', error);
-        // Still allow access for development
-        setIsAuthenticated(true);
+        console.error('App: Auth check failed:', error);
+        setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }
     };
 
-    autoLogin();
+    checkExistingAuth();
   }, []);
 
   // Show loading while checking authentication
@@ -64,19 +62,14 @@ function App() {
     );
   }
 
-  // If not authenticated, show a simple login bypass
+  // If not authenticated, show login form
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
-          <p className="mb-4">Please log in to continue</p>
-          <button 
-            onClick={() => setIsAuthenticated(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-          >
-            Continue to App
-          </button>
+        <div className="w-full max-w-md p-6 bg-card rounded-lg shadow-lg">
+          <h1 className="text-2xl font-bold mb-4 text-center">PentoraSec Login</h1>
+          <p className="text-muted-foreground text-center mb-6">Please log in to continue</p>
+          <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />
         </div>
       </div>
     );

@@ -44,7 +44,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=JWT_ACCESS_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire})
+    
+    # Add session ID for security
+    session_id = str(uuid.uuid4())
+    to_encode.update({
+        "exp": expire,
+        "session_id": session_id,
+        "iat": datetime.now(timezone.utc).timestamp()
+    })
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt
 
@@ -166,58 +173,5 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     return UserResponse(**user_data)
 
 
-@router.post("/auto-login", response_model=TokenResponse)
-async def auto_login(db: Session = Depends(get_db)):
-    """Auto-login endpoint for development - creates a user if none exists"""
-    # Check if any user exists
-    existing_user = db.query(DBUser).first()
-    
-    if existing_user:
-        # Use existing user
-        access_token = create_access_token(data={"sub": existing_user.id})
-        return TokenResponse(
-            access_token=access_token,
-            token_type="bearer",
-            user=UserResponse(
-                id=existing_user.id,
-                username=existing_user.username,
-                email=existing_user.email,
-                tier=existing_user.tier,
-                subscription_valid_until=existing_user.subscription_valid_until.isoformat() if existing_user.subscription_valid_until else None,
-                created_at=existing_user.created_at.isoformat()
-            )
-        )
-    else:
-        # Create a default user
-        user_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc)
-        
-        db_user = DBUser(
-            id=user_id,
-            username="Demo User",
-            email="demo@example.com",
-            tier="essential",
-            subscription_valid_until=None,
-            last_tool_run_at=None,
-            created_at=now,
-            updated_at=now
-        )
-        
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        
-        access_token = create_access_token(data={"sub": user_id})
-        
-        return TokenResponse(
-            access_token=access_token,
-            token_type="bearer",
-            user=UserResponse(
-                id=db_user.id,
-                username=db_user.username,
-                email=db_user.email,
-                tier=db_user.tier,
-                subscription_valid_until=db_user.subscription_valid_until.isoformat() if db_user.subscription_valid_until else None,
-                created_at=db_user.created_at.isoformat()
-            )
-        )
+# REMOVED: Auto-login endpoint was a major security vulnerability
+# This endpoint allowed anyone to access any user's data

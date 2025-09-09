@@ -13,7 +13,8 @@ import {
   Sun,
   Moon,
   Heart,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -40,6 +41,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
     { name: 'Notes', href: '/notes', icon: StickyNote },
     { name: 'Tools', href: '/tools', icon: Wrench },
     { name: 'Upgrade Plan', href: '/pricing', icon: Gem },
+    { name: 'Product Features', href: '/features', icon: Shield },
     { name: 'Policy', href: '/policy', icon: FileText },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];

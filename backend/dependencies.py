@@ -19,6 +19,8 @@ class User:
         self.last_tool_run_at = data.get('last_tool_run_at')
 
 # Tier limits configuration
+ALLOWED_TOOLS = {'subfinder', 'nmap', 'gobuster', 'ffuf', 'nuclei', 'amass'}
+
 TIER_LIMITS = {
     'essential': {
         'max_projects': 3,
@@ -28,22 +30,22 @@ TIER_LIMITS = {
     'professional': {
         'max_projects': 10,
         'tool_delay_seconds': 3,
-        'allowed_tools': 'all'  # All tools allowed
+        'allowed_tools': ALLOWED_TOOLS  # All tools allowed
     },
     'teams': {
         'max_projects': None,  # Unlimited
         'tool_delay_seconds': 0,
-        'allowed_tools': 'all'
+        'allowed_tools': ALLOWED_TOOLS
     },
     'enterprise': {
         'max_projects': None,  # Unlimited
         'tool_delay_seconds': 0,
-        'allowed_tools': 'all'
+        'allowed_tools': ALLOWED_TOOLS
     },
     'elite': {
         'max_projects': None,  # Unlimited
         'tool_delay_seconds': 0,
-        'allowed_tools': 'all'
+        'allowed_tools': ALLOWED_TOOLS
     }
 }
 
@@ -54,18 +56,11 @@ async def get_current_active_user(
     """
     Get current active user from JWT token and database
     """
-    # SECURITY: Remove debug logging in production
-    if os.getenv("DEBUG", "false").lower() == "true":
-        print(f"🔐 Auth Debug: Authorization header present: {bool(authorization)}")
-    
+    # SECURITY: No debug logging in production
     if not authorization or not authorization.startswith("Bearer "):
-        if os.getenv("DEBUG", "false").lower() == "true":
-            print("❌ Auth Debug: No valid authorization header")
         raise HTTPException(status_code=401, detail="Authorization token required")
     
     token = authorization.split(" ", 1)[1]
-    if os.getenv("DEBUG", "false").lower() == "true":
-        print(f"🔐 Auth Debug: Token length: {len(token)}")
     
     try:
         from jose import JWTError, jwt
@@ -75,21 +70,13 @@ async def get_current_active_user(
         user_id = payload.get("sub")
         
         if not user_id:
-            if os.getenv("DEBUG", "false").lower() == "true":
-                print("❌ Auth Debug: No user ID in token")
             raise HTTPException(status_code=401, detail="Invalid token")
         
         # Get user from database
         from database import User as DBUser
         user_data = db.query(DBUser).filter(DBUser.id == user_id).first()
         if not user_data:
-            if os.getenv("DEBUG", "false").lower() == "true":
-                print(f"❌ Auth Debug: User not found in database")
             raise HTTPException(status_code=401, detail="User not found")
-        
-        if os.getenv("DEBUG", "false").lower() == "true":
-            safe_username = str(user_data.username)[:20] + "..." if len(str(user_data.username)) > 20 else str(user_data.username)
-            print(f"✅ Auth Debug: User authenticated successfully: {safe_username}")
         return User({
             'id': user_data.id,
             'username': user_data.username,
@@ -100,8 +87,6 @@ async def get_current_active_user(
         })
         
     except JWTError as e:
-        if os.getenv("DEBUG", "false").lower() == "true":
-            print(f"❌ Auth Debug: JWT Error: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def check_project_limit(
@@ -142,15 +127,12 @@ async def check_tool_permission(
     limits = TIER_LIMITS.get(tier, TIER_LIMITS['essential'])
     allowed_tools = limits['allowed_tools']
     
-    # All tools allowed for professional and above
-    if allowed_tools == 'all':
-        return {"user": current_user, "tool_name": tool_name}
-    
-    # Check if tool is in allowed list for essential tier
+    # SECURITY: Fix tier bypass vulnerability
+    # Check if tool is in allowed list for user's tier
     if tool_name not in allowed_tools:
         raise HTTPException(
             status_code=403,
-            detail="Bu aracı kullanmak için Professional veya üstü bir plana sahip olmalısınız."
+            detail=f"Bu aracı kullanmak için {tier.upper()} planında değilsiniz. Lütfen planınızı yükseltin."
         )
     
     return {"user": current_user, "tool_name": tool_name}

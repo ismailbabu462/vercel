@@ -65,19 +65,10 @@ def verify_token(token: str) -> dict:
 
 
 async def get_current_user(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)) -> dict:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Authorization token required")
-    
-    token = authorization.split(" ", 1)[1]
-    payload = verify_token(token)
-    user_id = payload.get("sub")
-    
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user = db.query(DBUser).filter(DBUser.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    """Legacy authentication method - use get_current_active_user instead"""
+    # SECURITY: Use consistent authentication method
+    from dependencies import get_current_active_user
+    user = await get_current_active_user(authorization, db)
     
     return {
         "id": user.id,
@@ -86,8 +77,8 @@ async def get_current_user(authorization: Optional[str] = Header(None), db: Sess
         "tier": user.tier,
         "subscription_valid_until": user.subscription_valid_until,
         "last_tool_run_at": user.last_tool_run_at,
-        "created_at": user.created_at,
-        "updated_at": user.updated_at
+        "created_at": None,  # Not available in User class
+        "updated_at": None   # Not available in User class
     }
 
 
@@ -175,44 +166,66 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
 
 @router.post("/device-login", response_model=TokenResponse)
 async def device_login(request: Request, db: Session = Depends(get_db)):
-    """Professional device-based auto-login with advanced fingerprinting"""
+    """Secure device-based auto-login with rate limiting and validation"""
     import hashlib
     import platform
     import socket
     import uuid
     import time
     import json
+    from collections import defaultdict
+    from datetime import datetime, timedelta
     
-    # Advanced device fingerprinting (OWASP compliant)
-    user_agent = request.headers.get("user-agent", "")
-    accept_language = request.headers.get("accept-language", "")
-    accept_encoding = request.headers.get("accept-encoding", "")
-    connection = request.headers.get("connection", "")
-    cache_control = request.headers.get("cache-control", "")
+    # SECURITY: Rate limiting for device login
+    client_ip = request.client.host
+    current_time = datetime.now()
     
-    # Create comprehensive device fingerprint
-    device_components = [
-        platform.system(),           # Windows, Linux, macOS
-        platform.release(),          # 10, 11, etc.
-        platform.machine(),          # x86_64, AMD64, etc.
-        platform.processor(),        # Intel, AMD, etc.
-        socket.gethostname(),        # Computer name
-        user_agent,                  # Browser info
-        accept_language,             # Language preferences
-        accept_encoding,             # Compression support
-        connection,                  # Connection type
-        cache_control,               # Cache behavior
-        str(uuid.getnode()),         # MAC address (network card)
-        str(time.time())[:10]        # Timestamp for uniqueness
+    # Simple in-memory rate limiting (in production, use Redis)
+    if not hasattr(device_login, 'rate_limits'):
+        device_login.rate_limits = defaultdict(list)
+    
+    # Clean old entries (older than 1 hour)
+    device_login.rate_limits[client_ip] = [
+        login_time for login_time in device_login.rate_limits[client_ip]
+        if current_time - login_time < timedelta(hours=1)
     ]
     
-    # Create unique device ID with multiple hashing layers
+    # Check rate limit (max 5 device logins per hour per IP)
+    if len(device_login.rate_limits[client_ip]) >= 5:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many device login attempts. Please try again later."
+        )
+    
+    # SECURITY: Validate required headers
+    user_agent = request.headers.get("user-agent", "")
+    if not user_agent or len(user_agent) < 10:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or missing user agent"
+        )
+    
+    # SECURITY: Basic fingerprint validation
+    accept_language = request.headers.get("accept-language", "")
+    accept_encoding = request.headers.get("accept-encoding", "")
+    
+    # Create secure device fingerprint (reduced entropy for stability)
+    device_components = [
+        platform.system(),
+        platform.release(),
+        platform.machine(),
+        user_agent[:100],  # Limit user agent length
+        accept_language[:50],  # Limit language length
+        str(uuid.getnode())  # MAC address only
+    ]
+    
+    # Create stable device ID
     device_string = "|".join(device_components)
     device_id = hashlib.sha256(device_string.encode()).hexdigest()[:32]
+    final_device_id = f"device_{device_id[:16]}"
     
-    # Add additional entropy for better uniqueness
-    entropy = hashlib.sha256(f"{device_id}{uuid.uuid4()}".encode()).hexdigest()[:16]
-    final_device_id = f"{device_id[:16]}-{entropy}"
+    # SECURITY: Record this login attempt
+    device_login.rate_limits[client_ip].append(current_time)
     
     # Check if device user exists
     existing_user = db.query(DBUser).filter(DBUser.email == f"device_{final_device_id}@pentorsec.local").first()
@@ -233,9 +246,22 @@ async def device_login(request: Request, db: Session = Depends(get_db)):
             )
         )
     else:
-        # Create new device user
+        # Create new device user with security limits
         user_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
+        
+        # SECURITY: Limit device user creation (max 10 per IP per day)
+        device_creation_key = f"device_creation_{client_ip}_{current_time.date()}"
+        if not hasattr(device_login, 'device_creation_limits'):
+            device_login.device_creation_limits = defaultdict(int)
+        
+        if device_login.device_creation_limits[device_creation_key] >= 10:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many device registrations. Please try again tomorrow."
+            )
+        
+        device_login.device_creation_limits[device_creation_key] += 1
         
         db_user = DBUser(
             id=user_id,

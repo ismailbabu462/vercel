@@ -67,7 +67,7 @@ def validate_password_strength(password: str) -> Dict[str, Any]:
     }
 
 def sanitize_input(text: str, max_length: int = 1000, allow_html: bool = False) -> str:
-    """Sanitize user input to prevent XSS and injection attacks"""
+    """Sanitize user input to prevent XSS, SQL injection, and command injection attacks"""
     if not text or not isinstance(text, str):
         return ""
     
@@ -91,6 +91,35 @@ def sanitize_input(text: str, max_length: int = 1000, allow_html: bool = False) 
         for pattern in dangerous_patterns:
             if re.search(pattern, sanitized, re.IGNORECASE):
                 sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+    
+    # SECURITY: Additional SQL injection prevention
+    sql_patterns = [
+        r'union\s+select',     # UNION SELECT
+        r'drop\s+table',       # DROP TABLE
+        r'delete\s+from',      # DELETE FROM
+        r'insert\s+into',      # INSERT INTO
+        r'update\s+set',       # UPDATE SET
+        r'--',                 # SQL comments
+        r'/\*.*?\*/',          # SQL block comments
+        r';\s*$',              # SQL statement termination
+    ]
+    
+    for pattern in sql_patterns:
+        if re.search(pattern, sanitized, re.IGNORECASE):
+            sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+    
+    # SECURITY: Command injection prevention
+    command_patterns = [
+        r'[;&|`$]',            # Command separators
+        r'\.\./',              # Path traversal
+        r'\.\.\\',             # Windows path traversal
+        r'%2e%2e',             # URL encoded path traversal
+        r'%00',                # Null byte injection
+    ]
+    
+    for pattern in command_patterns:
+        if re.search(pattern, sanitized, re.IGNORECASE):
+            sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
     
     # Limit length
     if len(sanitized) > max_length:

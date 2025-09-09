@@ -104,14 +104,14 @@ async def api_docs():
 # CORS configuration
 origins = os.getenv("CORS_ORIGINS", CORS_ORIGINS).split(',')
 
-# Add CORS middleware with comprehensive settings
+# Add CORS middleware with secure settings
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],  # Allow all origins for Swagger UI
+    allow_origins=origins,  # Use specific origins from config
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    expose_headers=["X-Process-Time"],
 )
 
 # Add rate limiting middleware (before security headers)

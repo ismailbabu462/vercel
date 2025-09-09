@@ -11,8 +11,9 @@ if JWT_SECRET_KEY is None or JWT_SECRET_KEY == "your-secret-key-change-in-produc
     if ENVIRONMENT == "production":
         raise ValueError("JWT_SECRET_KEY must be set in production environment")
     else:
-        JWT_SECRET_KEY = secrets.token_urlsafe(32)
-        print("WARNING: Using dynamically generated JWT secret key for development. Set JWT_SECRET_KEY in .env for production.")
+        # Use persistent secret for development to avoid token invalidation
+        JWT_SECRET_KEY = "dev-pentorasec-secret-key-change-in-production-2024"
+        print("WARNING: Using development JWT secret key. Set JWT_SECRET_KEY in .env for production.")
 
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_DAYS = 7  # Reduced from 30 days for better security

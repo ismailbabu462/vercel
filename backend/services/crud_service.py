@@ -222,21 +222,29 @@ def delete_note(note_id: str, user_id: str, db: Session) -> bool:
 
 # Vulnerability CRUD Operations
 def create_vulnerability(project_id: str, user_id: str, vuln_data: dict, db: Session) -> DBVulnerability:
-    """Create a new vulnerability"""
-    db_vuln = DBVulnerability(
-        title=vuln_data["title"],
-        payload=vuln_data["payload"],
-        how_it_works=vuln_data["how_it_works"],
-        severity=vuln_data["severity"],
-        project_id=project_id,
-        user_id=user_id
-    )
-    
-    db.add(db_vuln)
-    db.commit()
-    db.refresh(db_vuln)
-    
-    return db_vuln
+    """Create a new vulnerability with transaction security"""
+    try:
+        db_vuln = DBVulnerability(
+            title=vuln_data["title"],
+            payload=vuln_data["payload"],
+            how_it_works=vuln_data["how_it_works"],
+            severity=vuln_data["severity"],
+            project_id=project_id,
+            user_id=user_id
+        )
+        
+        db.add(db_vuln)
+        db.commit()
+        db.refresh(db_vuln)
+        
+        return db_vuln
+    except Exception as e:
+        db.rollback()
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create vulnerability: {str(e)}"
+        )
 
 
 def get_vulnerabilities_by_project(project_id: str, db: Session) -> List[DBVulnerability]:

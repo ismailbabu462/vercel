@@ -306,30 +306,22 @@ const ProductFeaturesPage = () => {
           </CardContent>
         </Card>
 
-        {/* Call to Action */}
+        {/* Support Section */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
           <CardContent className="text-center py-12">
-            <h3 className="text-2xl font-bold mb-4">Ready to Secure Your Digital Assets?</h3>
+            <h3 className="text-2xl font-bold mb-4">Need Support or Have Questions?</h3>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Join thousands of organizations that trust PentoraSec for their security needs. 
-              Get started with our comprehensive security suite today.
+              Our team is here to help you with any questions about our security features, 
+              implementation, or technical support needs.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 size="lg" 
                 className="bg-white text-blue-600 hover:bg-blue-50"
-                onClick={() => window.location.href = '/pricing'}
+                onClick={() => window.open('mailto:pentora59@gmail.com?subject=PentoraSec Support Request', '_blank')}
               >
-                View Pricing Plans
+                Contact Support
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-blue-600"
-                onClick={() => window.location.href = '/dashboard'}
-              >
-                Start Free Trial
               </Button>
             </div>
           </CardContent>

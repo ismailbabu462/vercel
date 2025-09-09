@@ -186,6 +186,70 @@ const ProductFeaturesPage = () => {
           ))}
         </div>
 
+        {/* AI Security */}
+        <Card className="mb-12 bg-gradient-to-r from-emerald-600 to-blue-600 text-white border-0">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Key className="w-8 h-8 text-yellow-300" />
+              <CardTitle className="text-2xl">AI Security & Privacy</CardTitle>
+            </div>
+            <CardDescription className="text-emerald-100">
+              Advanced AI capabilities with enterprise-grade security and privacy protection
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* BYOK Model */}
+              <div className="bg-white/10 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Shield className="w-6 h-6 text-yellow-300" />
+                  <h3 className="text-xl font-semibold">Bring Your Own Key (BYOK)</h3>
+                </div>
+                <p className="text-emerald-100 mb-4">
+                  We use a Bring Your Own Key (BYOK) model. Your Gemini API key is NEVER sent to our servers - 
+                  it's only stored locally in your browser for maximum security and privacy.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-emerald-200">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Zero data transmission to external servers</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-emerald-200 mt-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Complete control over your API keys</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-emerald-200 mt-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Enterprise-grade privacy protection</span>
+                </div>
+              </div>
+
+              {/* On-Premise Option */}
+              <div className="bg-white/10 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Server className="w-6 h-6 text-yellow-300" />
+                  <h3 className="text-xl font-semibold">On-Premise Deployment</h3>
+                </div>
+                <p className="text-emerald-100 mb-4">
+                  Alternatively, for on-premise installations, our Ollama engine is fully compatible, 
+                  allowing you to run AI analysis completely within your own infrastructure.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-emerald-200">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Complete data sovereignty</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-emerald-200 mt-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>No external API dependencies</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-emerald-200 mt-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Customizable AI models</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Enterprise Features */}
         <Card className="mb-12 bg-gradient-to-r from-slate-900 to-slate-800 text-white border-0">
           <CardHeader className="text-center">

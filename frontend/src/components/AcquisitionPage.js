@@ -411,6 +411,20 @@ const AcquisitionPage = () => {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Extensible Tooling Engine</h3>
+                    <p className="text-muted-foreground">
+                      The architecture is designed to be tool-agnostic, allowing for the rapid 
+                      integration of new, custom, or proprietary command-line security tools 
+                      into the platform's workflow and AI analysis engine.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -17,7 +17,14 @@ import {
   Award,
   Target,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Search,
+  Network,
+  Bug,
+  FileText,
+  Settings,
+  Key,
+  Server
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -26,98 +33,98 @@ import { Button } from './ui/button';
 const ProductFeaturesPage = () => {
   const securityFeatures = [
     {
-      category: "Penetration Testing",
+      category: "Penetration Testing Tools",
       icon: Target,
       color: "from-red-500 to-orange-500",
       features: [
-        "Automated vulnerability scanning across web applications",
-        "Manual penetration testing with expert security analysts",
-        "OWASP Top 10 compliance verification",
-        "API security testing and endpoint validation",
-        "Network infrastructure penetration testing",
-        "Social engineering simulation and awareness testing"
+        "Subfinder - Subdomain discovery and enumeration",
+        "Amass - Advanced subdomain reconnaissance",
+        "Nmap - Network port scanning and service detection",
+        "Nuclei - Vulnerability scanner with custom templates",
+        "FFuF - Web fuzzing and directory brute-forcing",
+        "Gobuster - Directory and file brute-forcing"
       ]
     },
     {
-      category: "AI-Powered Security",
+      category: "AI-Powered Analysis",
       icon: Cpu,
       color: "from-blue-500 to-purple-500",
       features: [
-        "Machine learning-based threat detection",
-        "Intelligent vulnerability prioritization",
-        "Automated security report generation",
-        "Behavioral analysis and anomaly detection",
-        "Predictive security risk assessment",
-        "AI-driven remediation recommendations"
+        "Pentora AI - Intelligent vulnerability analysis",
+        "Automated scan result interpretation",
+        "Context-aware security recommendations",
+        "Project-wide security assessment",
+        "Vulnerability prioritization and scoring",
+        "Automated report generation and insights"
       ]
     },
     {
-      category: "Compliance & Standards",
-      icon: FileCheck,
+      category: "Security Infrastructure",
+      icon: Shield,
       color: "from-green-500 to-emerald-500",
       features: [
-        "ISO 27001 compliance framework",
-        "SOC 2 Type II certification support",
-        "GDPR and data privacy compliance",
-        "PCI DSS validation for payment systems",
-        "HIPAA compliance for healthcare data",
-        "Custom regulatory framework implementation"
+        "JWT-based authentication and authorization",
+        "Comprehensive security headers implementation",
+        "Rate limiting and DDoS protection",
+        "Input validation and sanitization",
+        "SQL injection prevention (SQLAlchemy ORM)",
+        "XSS and CSRF protection mechanisms"
       ]
     },
     {
-      category: "Real-time Monitoring",
-      icon: Activity,
+      category: "Project Management",
+      icon: FileText,
       color: "from-yellow-500 to-amber-500",
       features: [
-        "24/7 security monitoring and alerting",
-        "Real-time threat intelligence feeds",
-        "Automated incident response workflows",
-        "Security event correlation and analysis",
-        "Performance impact monitoring",
-        "Custom dashboard and reporting"
+        "Multi-project security testing organization",
+        "Vulnerability tracking and management",
+        "Note-taking and documentation system",
+        "Tool output storage and analysis",
+        "Project-based access control",
+        "Comprehensive audit logging"
       ]
     },
     {
-      category: "Team Collaboration",
+      category: "User Management",
       icon: Users,
       color: "from-indigo-500 to-blue-500",
       features: [
-        "Multi-user project management",
-        "Role-based access control (RBAC)",
-        "Collaborative vulnerability tracking",
-        "Team communication and notifications",
-        "Audit trail and activity logging",
-        "Custom workflow automation"
+        "Device-based auto-login system",
+        "Tier-based access control (Essential, Professional, Teams, Enterprise, Elite)",
+        "User session management",
+        "Project ownership and permissions",
+        "Activity tracking and monitoring",
+        "Secure user data handling"
       ]
     },
     {
-      category: "Data Protection",
+      category: "Data Security",
       icon: Database,
       color: "from-purple-500 to-pink-500",
       features: [
-        "End-to-end encryption for all data",
-        "Secure data storage and backup",
-        "Data anonymization and pseudonymization",
-        "Cross-border data transfer compliance",
-        "Data retention policy enforcement",
-        "Secure data disposal and destruction"
+        "Secure password hashing (Passlib)",
+        "Database connection pooling",
+        "Encrypted data transmission (HTTPS/TLS)",
+        "Secure API endpoints",
+        "Data validation and sanitization",
+        "Secure file upload handling"
       ]
     }
   ];
 
   const securityMetrics = [
-    { label: "Vulnerabilities Detected", value: "10,000+", icon: AlertTriangle },
-    { label: "Security Tests Run", value: "50,000+", icon: CheckCircle },
-    { label: "Compliance Frameworks", value: "15+", icon: Award },
-    { label: "Uptime Guarantee", value: "99.9%", icon: Clock }
+    { label: "Security Tools", value: "6+", icon: Target },
+    { label: "User Tiers", value: "5", icon: Users },
+    { label: "Security Headers", value: "12+", icon: Shield },
+    { label: "API Endpoints", value: "25+", icon: Server }
   ];
 
   const enterpriseFeatures = [
-    "Advanced threat hunting capabilities",
-    "Custom security policy development",
-    "Dedicated security consultant",
+    "Advanced AI-powered vulnerability analysis",
+    "Custom security tool integration",
+    "Dedicated project management",
     "Priority support and response",
-    "Custom integration development",
+    "Custom API endpoint development",
     "White-label security solutions"
   ];
 
@@ -207,23 +214,23 @@ const ProductFeaturesPage = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl flex items-center justify-center gap-2">
               <Globe className="w-6 h-6 text-blue-600" />
-              Industry Standards & Certifications
+              Security Standards & Best Practices
             </CardTitle>
             <CardDescription>
-              Our platform adheres to the highest security standards and industry best practices
+              Our platform implements industry-standard security practices and follows OWASP guidelines
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                "ISO 27001",
-                "SOC 2 Type II",
-                "PCI DSS",
-                "GDPR",
-                "HIPAA",
-                "NIST Framework",
                 "OWASP Guidelines",
-                "CIS Controls"
+                "JWT Security",
+                "HTTPS/TLS 1.3",
+                "CORS Protection",
+                "Input Validation",
+                "SQL Injection Prevention",
+                "XSS Protection",
+                "Rate Limiting"
               ].map((standard, index) => (
                 <div key={index} className="text-center p-4 border rounded-lg hover:bg-muted transition-colors">
                   <Badge variant="outline" className="text-sm font-medium">
@@ -267,13 +274,13 @@ const ProductFeaturesPage = () => {
         {/* Trust Indicators */}
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Trusted by security professionals worldwide
+            Built with modern security practices
           </p>
           <div className="flex items-center justify-center gap-8 opacity-60">
-            <div className="text-2xl font-bold">500+</div>
-            <div className="text-2xl font-bold">Enterprise Clients</div>
-            <div className="text-2xl font-bold">99.9%</div>
-            <div className="text-2xl font-bold">Uptime</div>
+            <div className="text-2xl font-bold">FastAPI</div>
+            <div className="text-2xl font-bold">React 18</div>
+            <div className="text-2xl font-bold">SQLAlchemy</div>
+            <div className="text-2xl font-bold">JWT Auth</div>
           </div>
         </div>
       </div>

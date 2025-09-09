@@ -15,10 +15,16 @@ import PolicyPage from "./components/PolicyPage";
 import ProductFeaturesPage from "./components/ProductFeaturesPage";
 import SettingsPage from "./components/SettingsPage";
 import WelcomePage from "./components/WelcomePage";
+import DocumentationPage from "./components/DocumentationPage";
+import AboutPage from "./components/AboutPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import TermsOfServicePage from "./components/TermsOfServicePage";
+import AcquisitionPage from "./components/AcquisitionPage";
 import PricingPage from "./pages/PricingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import MockCheckoutPage from "./pages/MockCheckoutPage";
 import AIPanel from "./components/ai/AIPanel";
+import Footer from "./components/Footer";
 
 // Token management is now handled in lib/api.js
 
@@ -97,6 +103,11 @@ function App() {
                 <Route path="/features" element={<ProductFeaturesPage />} />
                 <Route path="/policy" element={<PolicyPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/documentation" element={<DocumentationPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms" element={<TermsOfServicePage />} />
+                <Route path="/acquisition" element={<AcquisitionPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/payment/mock-checkout" element={<MockCheckoutPage />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
@@ -104,6 +115,7 @@ function App() {
             </main>
             <AIPanel />
           </div>
+          <Footer />
           <Toaster />
         </BrowserRouter>
       </div>

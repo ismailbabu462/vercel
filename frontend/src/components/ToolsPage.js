@@ -577,7 +577,7 @@ const ToolsPage = () => {
               variant="outline"
               size="sm"
               className="flex items-center space-x-2 hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
-              onClick={() => window.open('https://github.com/ismailbabu462/pentora-desktop-agents', '_blank')}
+              onClick={() => window.open('https://github.com/ismailbabu462/pentorasec-demo-desktop-agent-fix', '_blank')}
             >
               <Download className="w-4 h-4" />
               <span>Agent Download</span>
